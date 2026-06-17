@@ -16,7 +16,7 @@ Esta entrega contiene, en el directorio [`diagrama/`](./diagrama), el **código 
 
 ## Diagrama de Contenedores (C4)
 
-![Diagrama de Contenedores C4 - Tetris](./diagrama/tetris_c4_container.png)
+![Diagrama de Contenedores C4 - Tetris](./diagrama/tetris_c4_container.svg)
 
 ## Contenido del repositorio
 | Archivo | Descripción |
