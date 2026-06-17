@@ -1,0 +1,56 @@
+@startuml
+' Activa el estilo compatible que soporta tu entorno
+!NEW_C4_STYLE=1
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+SHOW_PERSON_OUTLINE()
+
+' Definición de Tags visuales basados en la priorización MoSCoW
+' Se configuran colores y formas específicas para la leyenda
+AddElementTag("mustHave", $fontColor="#FFFFFF", $bgColor="#D32F2F", $legendText="Must Have (Core Funcional)")
+AddElementTag("shouldHave", $fontColor="#FFFFFF", $bgColor="#F57C00", $shape=EightSidedShape(), $legendText="Should Have (Puntaje y Niveles)")
+AddElementTag("couldHave", $fontColor="#FFFFFF", $bgColor="#388E3C", $legendText="Could Have (Extras/Audio)")
+
+' Definición de estilos de flechas
+AddRelTag("async", $textColor=$ARROW_FONT_COLOR, $lineColor=$ARROW_COLOR, $lineStyle=DashedLine())
+AddRelTag("sync", $textColor=$ARROW_FONT_COLOR, $lineColor=$ARROW_COLOR, $lineStyle=DottedLine())
+
+!$title = "Container Diagram for Tetris Game System (MoSCoW Method)"
+title $title
+
+Person(player, Player, "Jugador interactuando con el videojuego Tetris")
+
+System_Boundary(tetris_system, "Tetris Game System") {
+    
+    Container(ui_view, "UI & Render View", "HTML5 Canvas / GUI", "Renderiza el tablero 10x24 vacío [R1, R2], la rejilla [R31] y captura inputs.", $tags="mustHave")
+    
+    Container(game_engine, "Game Engine", "TypeScript / Python", "Controla el Game Loop, caída [R6], spawn de piezas [R3] y estados (Play/Pause) [R17-R19].", $tags="mustHave")
+    
+    Container(physics, "Physics & Collision", "Data Structures", "Validación matemática de límites [R7, R8], solapamientos [R9] y rotaciones [R4, R5].", $tags="mustHave")
+    
+    Container(scoring, "Scoring & Leveling", "Business Logic", "Calcula puntos Nintendo [R23], conteo de líneas [R24] y subida de nivel [R22, R25].", $tags="shouldHave")
+    
+    Container(audio, "Audio Service", "Web Audio API", "Despacha efectos de sonido para eventos del juego.", $tags="couldHave")
+}
+
+' Relaciones del Jugador
+Rel(player, ui_view, "Envía comandos (Flechas/Pausa)", "Eventos")
+Rel_Back(player, ui_view, "Muestra colores [R20] y estado", "Render visual")
+Rel_Back(player, audio, "Escucha SFX", "Altavoces")
+
+' Relaciones Internas usando enrutamiento específico (Neighbor, Back)
+Rel_Neighbor(ui_view, game_engine, "Transmite acciones", "sync", $tags="sync")
+Rel_Back(ui_view, game_engine, "Envía matriz actualizada y score", "async", $tags="async")
+
+Rel_Neighbor(game_engine, physics, "Solicita validación de movimiento", "sync", $tags="sync")
+Rel_Back_Neighbor(game_engine, physics, "Retorna confirmación y filas llenas [R13]", "sync", $tags="sync")
+
+Rel(physics, scoring, "Notifica eliminación de filas (1-4)", "sync", $tags="sync")
+Rel_Back(game_engine, scoring, "Aumenta velocidad por nuevo nivel [R26]", "async", $tags="async")
+
+Rel(game_engine, audio, "Dispara triggers de sonido", "async", $tags="async")
+
+SHOW_LEGEND()
+footer drawn with PlantUML v. %version() and C4-PlantUML v. C4Version()
+@enduml
